@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.constants import golden
 
-def plot_equilateral_triangle(sidelength, startx=0, starty=0):
+def plot_equilateral_triangle(startx, starty, sidelength, inverted=True):
     # Find equilateral triangle height by halving it and finding the long side
     # of the resulting right triangle.
     # See Google pythagorean calc search:
@@ -20,19 +20,29 @@ def plot_equilateral_triangle(sidelength, startx=0, starty=0):
     y2 = starty
     x3 = startx + (sidelength / 2.0)
     y3 = starty + height
-    ax.plot(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]))
+    if inverted:
+        y3 = -(y3)
+    lines = ax.plot(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]))
+    return lines
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.grid(True)
 
 # Put left vertex of first triangle at coords 1,1:
-len_orig = 21
 startx = 0
 starty = 0
-for i in range(0, 3):
-    plot_equilateral_triangle(len_orig / golden, startx, starty)
-    startx += 1
-    starty += 1
+sidelength = 21
+# Create a stack of triangles:
+for i in range(0, 5):
+    lines = plot_equilateral_triangle(
+            startx, starty, sidelength, inverted=False)
+    # xdata and ydata both resemble:
+    #  array([  0.        ,  12.97871376,   6.48935688,   0.        ])
+    startx = lines[0].get_xdata()[2]
+    starty = lines[0].get_ydata()[2]
+    sidelength = sidelength / golden
 
+# Don't let aspect ratio get squashed
+plt.axes().set_aspect('equal', 'datalim')
 plt.show()
