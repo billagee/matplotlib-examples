@@ -7,7 +7,7 @@ import numpy as np
 from scipy.constants import golden
 
 def plot_equilateral_triangle(
-        sidelength, index=0, lastlines=None,
+        sidelength, index=0, lastpatch=None,
         hinge="right", invert=False, fillcolor=None):
     # Find equilateral triangle height:
     height = math.sqrt(3.0) * (sidelength / 2.0)
@@ -15,10 +15,8 @@ def plot_equilateral_triangle(
     print("Plotting triangle {} starting at {} of old one".format(index, hinge))
     startx = starty = None
     # Start points will always be third vertex plotted in the prev triangle
-    #startx = lastlines[0].get_xdata()[2]
-    #starty = lastlines[0].get_ydata()[2]
-    startx = lastlines.xy[2][0]
-    starty = lastlines.xy[2][1]
+    startx = lastpatch.xy[2][0]
+    starty = lastpatch.xy[2][1]
     # Plot dot at start point
     #plt.plot([startx], [starty], 'ro')
     if hinge == "left":
@@ -77,12 +75,17 @@ def plot_equilateral_triangle(
             y3 = starty # right
     else:
         raise Exception("Bad hinge point {}".format(hinge))
-    #lines = ax.plot(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]), linewidth=1.0, color="b")
-    lines = ax.add_patch(Polygon([[x1, y1], [x2, y2], [x3, y3],], closed=True,
-                          fill=True, facecolor=fillcolor)) #, linewidth=1, linestyle='solid', edgecolor='black')) #hatch='/'))
-    #if fillcolor:
-    #    plt.fill(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]), fillcolor)
-    return lines
+
+    patch = ax.add_patch(
+            Polygon([[x1, y1], [x2, y2], [x3, y3]],
+                closed=True, fill=True, facecolor=fillcolor, label="s"))
+    # Add text to center of polygon
+    cx = (x1 + x2 + x3) /  3
+    cy = (y1 + y2 + y3) /  3
+    ax.annotate(sidelength, (cx, cy),
+            color='w', weight='bold', fontsize=10,
+            ha='center', va='center')
+    return patch
 
 #plt.ion() # Interactively display updates as they're plot()ted
 fig = plt.figure()
@@ -102,8 +105,8 @@ ax.grid(True)
 """
 
 # Special case of first triangle
-sidelength = 5.0
-prev_sidelengths = [5.0]
+sidelength = 1.0
+prev_sidelengths = [1.0]
 height = math.sqrt(3.0) * (sidelength / 2.0)
 # Plot in order: L -> T -> R
 startx = starty = 1
@@ -114,22 +117,20 @@ y2 = starty - height # top
 x3 = startx # left
 y3 = starty # left
 #plt.plot([x1], [y1], 'ro')
-#lastlines = ax.plot(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]))
-lastlines = ax.add_patch(Polygon([[x1, y1], [x2, y2], [x3, y3],], closed=True,
-                          fill=True, facecolor="#666666")) # , hatch='/'))
-#plt.fill(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]), "#666666")
+lastpatch = ax.add_patch(Polygon([[x1, y1], [x2, y2], [x3, y3],], closed=True,
+                          fill=True, facecolor="#666666"))
 
 # Plot remaining triangles in a loop
 hinge = "right"
-for i in range(0, 7):
+for i in range(0, 10):
     if i % 2 == 0:
         invert = False
     else:
         invert = True
-    lastlines = plot_equilateral_triangle(
+    lastpatch = plot_equilateral_triangle(
             sidelength,
             index=i,
-            lastlines=lastlines,
+            lastpatch=lastpatch,
             hinge=hinge,
             invert=invert,
             fillcolor='#666666')
@@ -147,12 +148,12 @@ for i in range(0, 7):
         hinge = "right"
 
 # First triangle of second batch
-sidelength = 5.0
-prev_sidelengths = [5.0]
+sidelength = 1.0
+prev_sidelengths = [1.0]
 height = math.sqrt(3.0) * (sidelength / 2.0)
 # Plot in order: L -> T -> R
-#startx = 2.5
-startx = 3.5
+startx = 1.5
+#startx = 3.5
 starty = 1 - height
 x1 = startx # left
 y1 = starty # left
@@ -161,22 +162,20 @@ y2 = starty + height # top
 x3 = startx + sidelength # right
 y3 = starty # right
 #plt.plot([x1], [y1], 'ro')
-#lastlines = ax.plot(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]), color="#35206f")
-lastlines = ax.add_patch(Polygon([[x1, y1], [x2, y2], [x3, y3],], closed=True,
+lastpatch = ax.add_patch(Polygon([[x1, y1], [x2, y2], [x3, y3],], closed=True,
                           fill=True, color="#35206f"))
-#plt.fill(np.array([x1, x2, x3, x1]), np.array([y1, y2, y3, y1]), "#35206f")
 
 # Second batch
 hinge = "right"
-for i in range(0, 7):
+for i in range(0, 10):
     if i % 2 == 0:
         invert = True
     else:
         invert = False
-    lastlines = plot_equilateral_triangle(
+    lastpatch = plot_equilateral_triangle(
             sidelength,
             index=i,
-            lastlines=lastlines,
+            lastpatch=lastpatch,
             hinge=hinge,
             invert=invert,
             fillcolor='#35206f')
@@ -195,8 +194,8 @@ for i in range(0, 7):
 
 # Don't let aspect ratio get squashed
 plt.axes().set_aspect('equal', 'datalim')
-ax.set_xlim((-100, 100))
-ax.set_ylim((-100, 100))
+ax.set_xlim((-30, 30))
+ax.set_ylim((-30, 30))
 plt.show()
 #while True:
 #    plt.pause(0.05)
